@@ -11,6 +11,16 @@ editor_options:
 
 This repository contains an archival copy of the **Albers.gdb.zip** dataset, originally distributed by the National Drought Mitigation Center (NDMC) at the University of Nebraska, Lincoln. The NDMC stewards the US Drought Monitor, a weekly assessment of drought conditions in the United States and outlying territories.
 
+## Download Script
+
+```{r download}
+install.packages("curl")
+
+## Download the NDMC Albers.gdb.zip file
+curl::multi_download("https://droughtcenter.unl.edu/Outgoing/Albers.gdb.zip",
+                     "Albers.gdb.zip")
+```
+
 ## 📦 Dataset Overview
 
 -   **Title:** FSA_Counties_dd17
@@ -128,7 +138,7 @@ library(rmapshaper) # For innerlines function
 
 ## Download the FSA_Counties_dd17 archive
 counties <- 
-  sf::read_sf("https://climate-smart-usda.github.io/fsa-counties-dd17/fsa-counties-dd17.topojson",
+  sf::read_sf("/vsizip//vsicurl/https://climate-smart-usda.github.io/ndmc-counties-albers/Albers.gdb.zip",
               layer = "counties") |>
   sf::st_set_crs("EPSG:4326") |>
   sf::st_transform("EPSG:5070")
