@@ -11,255 +11,214 @@ United States and outlying territories.
 
 ## Download Script
 
+This is the script used to acquire the archived geodatabase. It is not
+evaluated when this README is knit, so that knitting never overwrites
+the archived artifact.
+
+``` r
+install.packages("curl")
+
+## Download the NDMC Albers.gdb.zip file
+curl::multi_download("https://droughtcenter.unl.edu/Outgoing/Albers.gdb.zip",
+                     "Albers.gdb.zip")
+```
+
 ## 📦 Dataset Overview
 
-- **Title:** FSA_Counties_dd17
-- **Source:** USDA Farm Service Agency (FSA)
-- **Format:** ESRI File Geodatabase (.gdb)
-- **Original Reference:** [USDA FSA GIS Metadata Standards (1-GIS,
-  Amendment
-  2)](https://www.fsa.usda.gov/Internet/FSA_File/1-gis_r00_a02.pdf)
+- **Title:** Albers.gdb
+- **Source:** National Drought Mitigation Center (NDMC), University of
+  Nebraska–Lincoln
+- **Format:** ESRI File Geodatabase (.gdb), USA Contiguous Albers Equal
+  Area Conic projection (ESRI:102003)
+- **Original Distribution:**
+  <https://droughtcenter.unl.edu/Outgoing/Albers.gdb.zip>
 - **Distribution Type:** Public archival for research and historical
   purposes
-- **Date of Archive:** 2025-04-16
+- **Date of Archive:** 2025-06-06
 
 ## 📂 Contents
 
-The zipped geodatabase includes polygon features representing U.S.
-counties, attributed with identifiers used by the FSA for administrative
-and mapping purposes. It was prepared according to the USDA’s GIS Data
-Standards.
+The zipped geodatabase contains ten county-boundary layers (all with a
+2021 vintage in their names) reportedly used by the NDMC in producing
+weekly US Drought Monitor county statistics and map products. This
+repository provides:
 
-- [`FSA_Counties_dd17.gdb.zip`](https://sustainable-fsa.github.io/fsa-counties-dd17/FSA_Counties_dd17.gdb.zip)
-  – Original USDA File Geodatabase
-- [`fsa-counties-dd17.topojson`](https://sustainable-fsa.github.io/fsa-counties-dd17/fsa-counties-dd17.topojson)
-  – Simplified TopoJSON version with pre-inset Alaska/Hawaii/Puerto Rico
-  (see below)
-- [`fsa-counties-dd17.R`](https://sustainable-fsa.github.io/fsa-counties-dd17/fsa-counties-dd17.R)
-  – R script that produces the Simplified TopoJSON versions
+- [`Albers.gdb.zip`](https://sustainable-fsa.com/ndmc-counties-albers/Albers.gdb.zip)
+  – The original NDMC File Geodatabase, archived unmodified
+- [`ndmc-counties-albers.R`](https://sustainable-fsa.com/ndmc-counties-albers/ndmc-counties-albers.R)
+  – R script that downloads the geodatabase from the NDMC server
+
+Layers in the geodatabase:
+
+| Layer                            | Geometry          |
+|----------------------------------|-------------------|
+| `counties_detailed_all_2021`     | Multi Polygon     |
+| `counties_detailed_stats_2021`   | Multi Polygon     |
+| `counties_detailed_total_2021`   | Multi Polygon     |
+| `counties_detailed_usvi_2021`    | Multi Polygon     |
+| `counties_simp_all_2021`         | Multi Polygon     |
+| `counties_simp_total_2021`       | Multi Polygon     |
+| `counties_simp_total_2021_1`     | Multi Polygon     |
+| `counties_simp_json_2021`        | Multi Polygon     |
+| `counties_simp_usvi_2021`        | Multi Polygon     |
+| `counties_simp_total_inner_2021` | Multi Line String |
+
+The `detailed` layers carry full-resolution boundaries; the `simp`
+layers are simplified variants. The NDMC has not published documentation
+of the layers’ intended uses.
 
 ## 🧾 Field Descriptions
 
+Fields of the primary layer, `counties_detailed_all_2021` (3,264
+features covering all states and territories):
+
 | Field Name | Description |
 |----|----|
-| `STPO` | A two-letter USPS abbreviation for the state |
-| `FSA_Name` | The FSA-assigned administrative county name |
-| `FSA_ST` | A two-digit FSA-assigned administrative state code |
-| `FSA_STCOU` | A five-digit FSA-assigned administrative state and county code |
-| `STATENAME` | The full name of the state |
-| `FIPS_C` | A five-digit FIPS state and county code |
-| `COUNTYNAME` | The county Name |
-| `FIPSST` | A two-digit FIPS state code |
-| `FIPSCO` | A three-digit FIPS county code |
-| `NOTE` | Miscellaneous and historical notes on FSA boundary definitions |
-| `utm_lookup_identifier` | A numeric identifier used for joining county geometries to internal USDA lookup tables related to UTM projection metadata. |
-| `state_county_fips_code` | A five-digit FIPS state and county code; Identical to `FIPS_C`. |
-| `utm_zone_number` | The Universal Transverse Mercator (UTM) zone in which the county falls. |
-| `utm_zone_designator` | The Universal Transverse Mercator (UTM) latitude band designator in which the county falls. |
+| `CountyFIPS` | A five-digit FIPS state and county code |
+| `CountyName` | The county name |
+| `StateFIPS` | A two-digit FIPS state code |
+| `StateAbbr` | A two-letter USPS abbreviation for the state |
+| `ISCONUS` | `YES`/`NO` — whether the county lies within the contiguous US |
+| `ISTOTAL` | `YES`/`NO` flag; purpose not documented by the NDMC |
+| `WKID` | Well-known ID of the layer’s coordinate reference system |
 | `Shape_Length` | The polygon edge length in meters |
 | `Shape_Area` | The polygon area in square meters |
 
-## 🗂️ Simplified TopoJSON Version
-
-A simplified version of the `FSA_Counties_dd17` dataset is included in
-this repository as `fsa-counties-dd17.topojson`. This version was
-created to reduce geometric complexity and ensure compatibility with
-common web mapping tools.
-
-### 🔧 Processing Steps
-
-This workflow processes the USDA Farm Service Agency (FSA) county
-definitions to produce a clean, simplified, and TopoJSON-compatible
-version of the dataset, suitable for use in web mapping applications.
-
-#### 1. Load and Preprocess FSA County Data
-
-- Load the original county boundaries from a zipped file geodatabase:  
-  `FSA_Counties_dd17.gdb.zip`
-- Exclude U.S. territories by filtering out counties with `FIPSST`
-  codes:
-  - American Samoa (`60`), Guam (`66`), Northern Mariana Islands (`69`),
-    Puerto Rico (`72`), U.S. Virgin Islands (`78`), etc.
-- Retain only the `FSA_STCOU` field and rename it to `id` for clarity.
-
-#### 2. Normalize Geometries
-
-- Perform a **round-trip** to GeoJSON:
-  - Write the filtered data to a temporary `.geojson` file.
-  - Read it back into R using `sf::read_sf()`.
-- This step removes non-standard geometries (e.g., curved edges or arcs)
-  that may interfere with simplification or projection.
-
-#### 3. Transform and Simplify Geometries
-
-- Project all features to the WGS84 coordinate reference system.
-- Use `rmapshaper::ms_explode()` to break multi-part polygons into
-  single-part features.
-- Recombine features by `id` using `ms_dissolve()` to ensure unique
-  county geometries.
-- Apply `ms_simplify(keep = 0.01)` to reduce geometric complexity while
-  preserving topology.
-
-#### 4. Clip to Official TIGER/Line Boundaries
-
-- Download generalized U.S. county boundaries via the `tigris` package:
-  - Use `cb = TRUE` and `resolution = "5m"` for cartographic accuracy.
-- Use `ms_explode()` and `ms_dissolve()` to produce a clean national
-  boundary.
-- Clip FSA geometries to the national boundary using `ms_clip()`,
-  removing slivers and enforcing alignment.
-
-#### 5. Further Geometry Cleaning
-
-- Use `sf::st_make_valid()` to repair any topological errors.
-- Repeat explode/dissolve operations as needed to clean up geometry
-  structure.
-- Reposition Alaska, Hawaii, and outlying areas using
-  `tigris::shift_geometry()` for optimal layout in web maps.
-- Convert all features to `MULTIPOLYGON` geometries.
-- Sort features by `id` to ensure consistent ordering.
-
-#### 6. Export Cleaned Data
-
-- Save the cleaned and simplified geometries to
-  `fsa-counties-dd17.geojson`.
-
-#### 7. Post-process with Mapshaper (CLI)
-
-- Use Mapshaper to:
-  - Clean and reorient geometry: `-clean rewind`
-  - Derive a new `state` field from the first two characters of `id`:  
-    `-each 'state=id.slice(0,2)'`
-  - Merge counties into states: `-dissolve field=state`
-  - Rename layers: `counties` and `states`
-  - Quantize coordinates for TopoJSON compression: `quantization=1e5`
-- Export the result as `fsa-counties-dd17.topojson`.
-
-#### 8. Cleanup
-
-- Remove the temporary GeoJSON file to tidy the workspace.
-
-------------------------------------------------------------------------
-
 ## 🛠️ How to Use
 
-1.  Unzip the `FSA_Counties_dd17.gdb.zip` file.
-2.  Open the `.gdb` in a GIS software environment such as
-    [QGIS](https://qgis.org) or [ArcGIS
+1.  Unzip the `Albers.gdb.zip` file.
+2.  Open the `Albers.gdb` geodatabase in a GIS software environment such
+    as [QGIS](https://qgis.org) or [ArcGIS
     Pro](https://www.esri.com/en-us/arcgis/products/arcgis-pro/overview).
 3.  Use the layer properties to explore attributes and spatial coverage.
 
 ------------------------------------------------------------------------
 
-## 📍 Quick Start: Visualize the FSA_Counties_dd17 topojson data in R
+## 📍 Quick Start: Visualize the Albers.gdb county boundaries in R
 
-This snippet shows how to load the fsa-counties-dd17.topojson file from
-the archive and create a simple map using `sf` and `ggplot2`.
+This snippet shows how to read the `counties_detailed_all_2021` layer
+directly from the archive and create a simple map using `sf` and
+`ggplot2`.
 
 ``` r
 # Load required libraries
-library(sf)
+library(sf)      # For spatial data
 library(ggplot2) # For plotting
-library(tigris)  # For state boundaries
-library(rmapshaper) # For innerlines function
+library(dplyr)   # For data manipulation
 
-## Download the FSA_Counties_dd17 archive
-counties <- 
-  sf::read_sf("https://sustainable-fsa.github.io/fsa-counties-dd17/fsa-counties-dd17.topojson",
-              layer = "counties") |>
-  sf::st_set_crs("EPSG:4326") |>
-  sf::st_transform("EPSG:5070")
+## Read the primary layer from the archived NDMC geodatabase
+counties <-
+  sf::read_sf("/vsizip//vsicurl/https://sustainable-fsa.com/ndmc-counties-albers/Albers.gdb.zip",
+              layer = "counties_detailed_all_2021") |>
+  dplyr::filter(ISCONUS == "YES")
+```
+
+    ## Warning in CPL_read_ogr(dsn, layer, query, as.character(options), quiet, : GDAL
+    ## Message 1: organizePolygons() received a polygon with more than 100 parts.  The
+    ## processing may be really slow.  You can skip the processing by setting
+    ## METHOD=SKIP. Further messages of this type will be suppressed.
+
+    ## Warning in CPL_read_ogr(dsn, layer, query, as.character(options), quiet, : GDAL
+    ## Message 1: organizePolygons() received a polygon with more than 100 parts. The
+    ## processing may be really slow.  You can skip the processing by setting
+    ## METHOD=SKIP, or only make it analyze counter-clock wise parts by setting
+    ## METHOD=ONLY_CCW if you can assume that the outline of holes is counter-clock
+    ## wise defined. Further messages of this type will be suppressed.
+
+``` r
+states <-
+  counties |>
+  dplyr::group_by(StateFIPS) |>
+  dplyr::summarise(.groups = "drop")
 
 # Plot the map
-ggplot(counties) +
-  geom_sf(data = sf::st_union(counties),
-          fill = "grey80",
-          color = NA) +
+ggplot() +
   geom_sf(data = counties,
-          aes(fill = state), 
-          color = NA,
+          aes(fill = StateFIPS),
+          color = "white",
+          linewidth = 0.05,
           show.legend = FALSE) +
-  geom_sf(data = rmapshaper::ms_innerlines(counties),
+  geom_sf(data = states,
           fill = NA,
           color = "white",
-          linewidth = 0.1) +
-  geom_sf(data = counties |>
-            dplyr::group_by(state) |>
-            dplyr::summarise() |>
-            rmapshaper::ms_innerlines(),
-          fill = NA,
-          color = "white",
-          linewidth = 0.2) +
-  labs(title = "FSA County Administrative Boundaries",
-       subtitle = "Derived from the FSA_Counties_dd17 dataset") +
+          linewidth = 0.3) +
+  labs(title = "US Drought Monitor County Boundaries",
+       subtitle = "NDMC Albers.gdb · layer counties_detailed_all_2021 (contiguous US shown)") +
   theme_void()
 ```
 
-<img src="./example-1.png" style="display: block; margin: auto;" />
+<img src="./example-1.png" alt="" style="display: block; margin: auto;" />
 
 ------------------------------------------------------------------------
 
 ## 📌 Background
 
-The dataset originates from the **dd17** schema, a legacy geospatial
-data standard used by the USDA Farm Service Agency (FSA) for structuring
-county-level datasets. It served as a spatial index for county-level
-geospatial products and was used in conjunction with the **Common Land
-Unit (CLU)** framework.
+The National Drought Mitigation Center produces the weekly [US Drought
+Monitor](https://droughtmonitor.unl.edu) and, under contract to the USDA
+Office of the Chief Economist, performs the geospatial county
+eligibility determinations for FSA’s Livestock Forage Disaster Program
+(LFP). The `Albers.gdb` geodatabase, distributed from the NDMC’s public
+server, is reportedly the county boundary layer the NDMC uses to produce
+USDM county statistics and map products.
 
-While the dataset may no longer be updated or actively distributed by
-the USDA, it remains of historical and analytical interest —
-particularly for referencing USDA program boundaries, disaster
-assistance eligibility, and other geospatial analysis across agriculture
-and conservation.
+The provenance of these boundaries matters: in response to a FOIA
+inquiry (documented in the
+[`fsa-lfp-counties`](https://sustainable-fsa.com/fsa-lfp-counties/)
+archive), the NDMC described its county layer as originating from an
+ESRI dataset obtained around 2008 and essentially unchanged since — even
+as the US Census has recorded hundreds of county boundary corrections
+and changes over the same period. Because LFP eligibility turns on
+whether qualifying drought touches *any area of a county*, the boundary
+layer used in that intersection is consequential to program
+administration. This archive preserves the geodatabase as distributed,
+so those determinations can be independently reproduced and audited.
 
 ## 📝 Citation
 
 If you use this data in published work, please cite:
 
-> National Drought Mitigation Center. *NDMC Albers.gdb County Boundary Dataset*. Curated and archived by R. Kyle Bocinsky, Montana Climate Office, University of Montana. Sustainable FSA project. Accessed YYYY-MM-DD. <https://sustainable-fsa.com/ndmc-counties-albers/>
+> National Drought Mitigation Center. *NDMC Albers.gdb County Boundary
+> Dataset*. Curated and archived by R. Kyle Bocinsky, Montana Climate
+> Office, University of Montana. Sustainable FSA project. Accessed
+> YYYY-MM-DD. <https://sustainable-fsa.com/ndmc-counties-albers/>
 
-Machine-readable metadata are in [`CITATION.cff`](CITATION.cff); GitHub's **Cite this repository** button (top right of the repo page) renders it as APA or BibTeX.
+Machine-readable metadata are in [`CITATION.cff`](CITATION.cff);
+GitHub’s **Cite this repository** button (top right of the repo page)
+renders it as APA or BibTeX.
 
-**Acknowledgment**: This work is part of the [*Enhancing Sustainable Disaster Relief in FSA Programs*](https://www.ars.usda.gov/research/project/?accnNo=444612) project, supported by the USDA Office of the Chief Economist, Office of Energy and Environmental Policy, and the USDA Climate Hubs.
+**Acknowledgment**: This work is part of the [*Enhancing Sustainable
+Disaster Relief in FSA
+Programs*](https://www.ars.usda.gov/research/project/?accnNo=444612)
+project, supported by the USDA Office of the Chief Economist, Office of
+Energy and Environmental Policy, and the USDA Climate Hubs.
 
 ## 📄 License
 
-Data in the `FSA_Counties_dd17.gdb.zip` archive were produced by the
-United States Department of Agriculture (USDA), which are in the public
-domain under U.S. law (17 USC § 105).
-
-You are free to:
-
-- Use, modify, and distribute the data for any purpose
-- Include it in derivative works or applications, with or without
-  attribution
-
-If you modify or build upon the data, you are encouraged (but not
-required) to clearly mark any changes and cite this repository as the
-source of the original.
+Data in the `Albers.gdb.zip` archive were produced and publicly
+distributed by the National Drought Mitigation Center at the University
+of Nebraska–Lincoln. Unlike works of the US federal government, they are
+not automatically in the public domain; they are redistributed here,
+unmodified, for research, transparency, and archival purposes, with
+attribution to the NDMC. If you reuse the data, please credit the
+National Drought Mitigation Center.
 
 > No warranty is provided. Use at your own risk.
 
-The derivative `fsa-counties-dd17.topojson` file was created by R. Kyle
-Bocinsky and is released under the [Creative Commons CCZero
-license](https://creativecommons.org/publicdomain/zero/1.0/).
-
-The [`fsa-counties-dd17.R`](fsa-counties-dd17.R) script is copyright R.
-Kyle Bocinsky, and is released under the [MIT License](LICENSE).
+The [`ndmc-counties-albers.R`](ndmc-counties-albers.R) script is
+copyright R. Kyle Bocinsky, and is released under the [MIT
+License](LICENSE).
 
 ## ⚠️ Disclaimer
 
-This dataset is archived for reference and educational use. It may not
-reflect current administrative boundaries and should not be used for
-official USDA program administration. Always consult the USDA or state
-FSA office for current data.
+This dataset is archived for reference and research use. It may not
+reflect current county boundaries and should not be used for official
+program administration. Consult the NDMC or USDA for current data.
 
 ## 👏 Acknowledgment
 
-This work is part of the [*Enhancing Sustainable Disaster Relief in
-FSA Programs: Non-stationarity at the Intersection of Normal Grazing
-Periods and US Drought
+This work is part of the [*Enhancing Sustainable Disaster Relief in FSA
+Programs: Non-stationarity at the Intersection of Normal Grazing Periods
+and US Drought
 Assessment*](https://www.ars.usda.gov/research/project/?accnNo=444612)
 project. It is supported by US Department of Agriculture Office of the
 Chief Economist (OCE), Office of Energy and Environmental Policy (OEEP)
