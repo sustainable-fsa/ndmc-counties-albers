@@ -43,7 +43,7 @@ The zipped geodatabase contains ten county-boundary layers (all with a
 weekly US Drought Monitor county statistics and map products. This
 repository provides:
 
-- [`Albers.gdb.zip`](https://sustainable-fsa.com/ndmc-counties-albers/Albers.gdb.zip)
+- [`Albers.gdb.zip`](https://data.sustainable-fsa.com/ndmc-counties-albers/Albers.gdb.zip)
   – The original NDMC File Geodatabase, archived unmodified
 - [`ndmc-counties-albers.R`](https://sustainable-fsa.com/ndmc-counties-albers/ndmc-counties-albers.R)
   – R script that downloads the geodatabase from the NDMC server
@@ -108,7 +108,7 @@ library(dplyr)   # For data manipulation
 
 ## Read the primary layer from the archived NDMC geodatabase
 counties <-
-  sf::read_sf("/vsizip//vsicurl/https://sustainable-fsa.com/ndmc-counties-albers/Albers.gdb.zip",
+  sf::read_sf("/vsizip//vsicurl/https://data.sustainable-fsa.com/ndmc-counties-albers/Albers.gdb.zip",
               layer = "counties_detailed_all_2021") |>
   dplyr::filter(ISCONUS == "YES")
 ```
