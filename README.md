@@ -1,7 +1,6 @@
 
 [![GitHub
 Release](https://img.shields.io/github/v/release/sustainable-fsa/ndmc-counties-albers?label=GitHub%20Release&color=%239c27b0)](https://github.com/sustainable-fsa/ndmc-counties-albers)
-[![DOI](https://zenodo.org/badge/967595011.svg)](https://zenodo.org/badge/latestdoi/967595011)
 
 This repository contains an archival copy of the **Albers.gdb.zip**
 dataset, originally distributed by the National Drought Mitigation
