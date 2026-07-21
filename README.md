@@ -164,9 +164,14 @@ The provenance of these boundaries matters: in response to a FOIA
 inquiry (documented in the
 [`fsa-lfp-counties`](https://sustainable-fsa.com/fsa-lfp-counties/)
 archive), the NDMC described its county layer as originating from an
-ESRI dataset obtained around 2008 and essentially unchanged since — even
-as the US Census has recorded hundreds of county boundary corrections
-and changes over the same period. Because LFP eligibility turns on
+ESRI dataset obtained prior to the 2008 Farm Bill and revised only three
+times since — a 2019 South Dakota county name and FIPS change, a 2021
+Alaska boundary change, and a Connecticut redraw implemented after
+September 2025 — even as the US Census has recorded 472 county boundary
+corrections and changes from 2008 through 2025 alone. Note that the
+layer filenames in this geodatabase carry a 2021 vintage, which reflects
+the date of the most recent revision rather than that of the underlying
+geometry. Because LFP eligibility turns on
 whether qualifying drought touches *any area of a county*, the boundary
 layer used in that intersection is consequential to program
 administration. This archive preserves the geodatabase as distributed,
